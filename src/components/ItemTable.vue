@@ -1,23 +1,45 @@
 <template>
-  <b-table striped hover :items="items"></b-table>
+  <b-table striped hover :fields="fields" :items="items">
+    <template slot="index" slot-scope="data">
+      {{data.index + 1}}
+    </template>
+    <template slot="id" slot-scope="data">
+      {{data.item.itemId}}
+    </template>
+    <template slot="name" slot-scope="data">
+      {{data.item.name}}
+    </template>
+    <template slot="value" slot-scope="data">
+      {{data.item.value}}
+    </template>
+  </b-table>
 </template>
 
 <script>
-const items = [
-  { isActive: true, age: 40, first_name: 'Dickerson', last_name: 'Macdonald' },
-  { isActive: false, age: 21, first_name: 'Larsen', last_name: 'Shaw' },
-  { isActive: false, age: 89, first_name: 'Geneva', last_name: 'Wilson' },
-  { isActive: true, age: 38, first_name: 'Jami', last_name: 'Carney' }
-]
+import axios from "axios";
+import { Environment } from "../config.js";
+const items = [];
+const fields = [
+  'index',
+  { key: 'id', label: 'ID' },
+  { key: 'name', label: 'Name' },
+  { key: 'value', label: 'Value' }
+];
 
 export default {
   name: "ItemTable",
   data () {
     return {
-      items: items
+      fields: fields,
+      items: items,
     }
+  }, 
+  mounted () {
+    axios.get(Environment.API_URL + "/items")
+    .then(response => {
+      console.log(response);
+      this.items = response.data
+    });
   }
-}
+};
 </script>
-
-<!-- table-basic-1.vue -->
