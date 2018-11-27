@@ -3,7 +3,7 @@ export const Environment = {
   HTTP_OPTIONS: {
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json"
+      "Accept": "application/json"
     }
   }
 };

@@ -1,29 +1,58 @@
 <template>
-  <b-table striped hover :fields="fields" :items="items">
-    <template slot="index" slot-scope="data">
-      {{data.index + 1}}
-    </template>
-    <template slot="id" slot-scope="data">
-      {{data.item.itemId}}
-    </template>
-    <template slot="name" slot-scope="data">
-      {{data.item.name}}
-    </template>
-    <template slot="value" slot-scope="data">
-      {{data.item.value}}
-    </template>
-    <template slot="edit" slot-scope="field">
-      <b-btn size="md" variant="primary">Edit</b-btn>
-    </template>
-    <template slot="delete" slot-scope="field">
-      <b-btn size="md" variant="danger">Delete</b-btn>
-    </template>
-  </b-table>
+
+  <div>
+    <b-table striped hover :fields="fields" :items="items">
+      <template slot="index" slot-scope="data">
+        {{data.index + 1}}
+      </template>
+      <template slot="id" slot-scope="data">
+        {{data.item.itemId}}
+      </template>
+      <template slot="name" slot-scope="data">
+        {{data.item.name}}
+      </template>
+      <template slot="value" slot-scope="data">
+        {{data.item.value}}
+      </template>
+      <template slot="edit" slot-scope="data">
+        <b-btn size="md" variant="primary" @click="details(data.item.itemId)">Edit</b-btn>
+      </template>
+      <template slot="delete" slot-scope="data" @click="details(data.item.itemId)">
+        <b-btn size="md" variant="danger">Delete</b-btn>
+      </template>
+    </b-table>
+
+    <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+      <b-form-group id="nameInputGroup"
+                    label="Name:"
+                    label-for="nameInput">
+        <b-form-input id="nameInput"
+                      type="text"
+                      v-model="form.name"
+                      required
+                      placeholder="Enter an item name">
+        </b-form-input>
+      </b-form-group>
+      <b-form-group id="valueInputGroup"
+                    label="Value:"
+                    label-for="valueInput">
+        <b-form-input id="valueInput"
+                      type="text"
+                      v-model="form.value"
+                      required
+                      placeholder="Enter a value">
+        </b-form-input>
+      </b-form-group>
+      <b-button type="submit" variant="primary">Submit</b-button>
+      <b-button type="reset" variant="danger">Reset</b-button>
+    </b-form>
+  </div>
 </template>
 
 <script>
 import axios from "axios";
 import { Environment } from "../config.js";
+var qs = require('qs');
 const items = [];
 const fields = [
   'index',
@@ -40,14 +69,43 @@ export default {
     return {
       fields: fields,
       items: items,
+      form: {
+        name: '',
+        value: '',
+      },
+      show: true
     }
   }, 
-  mounted () {
-    axios.get(Environment.API_URL + "/items")
-    .then(response => {
-      // console.log(response);
+  async mounted () {
+    try {
+      const response = await axios.get(Environment.API_URL + "/items");
       this.items = response.data;
-    });
+    } catch (e) {
+      this.errors.push(e);
+    }
+  },
+  methods: {
+    // details(item) {
+    //   alert(JSON.stringify(item));
+    // },
+    async onSubmit (evt) {
+      evt.preventDefault();
+      try {
+        const response = await axios.post(Environment.API_URL + "/items", qs.stringify(this.form));
+        console.log(response);
+        this.items.push(response.data);
+      } catch (e) {
+        this.errors.push(e);
+      }
+    },
+    onReset (evt) {
+      evt.preventDefault();
+      this.form.name = '';
+      this.form.value = '';
+      
+      this.show = false;
+      this.$nextTick(() => { this.show = true });
+    }
   }
 };
 </script>
