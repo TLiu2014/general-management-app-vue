@@ -17,8 +17,8 @@
       <template slot="edit" slot-scope="data">
         <b-btn size="md" variant="primary" @click="details(data.item.itemId)">Edit</b-btn>
       </template>
-      <template slot="delete" slot-scope="data" @click="details(data.item.itemId)">
-        <b-btn size="md" variant="danger">Delete</b-btn>
+      <template slot="delete" slot-scope="data">
+        <b-btn size="md" variant="danger" @click="deleteItem(data.item.itemId)">Delete</b-btn>
       </template>
     </b-table>
 
@@ -85,9 +85,6 @@ export default {
     }
   },
   methods: {
-    // details(item) {
-    //   alert(JSON.stringify(item));
-    // },
     async onSubmit (evt) {
       evt.preventDefault();
       try {
@@ -105,7 +102,20 @@ export default {
       
       this.show = false;
       this.$nextTick(() => { this.show = true });
-    }
+    },
+    async deleteItem(evt) {
+      const itemId = evt;
+      this.items = this.items.filter(e => e.itemId !== itemId);
+      try {
+        const response = await axios.delete(Environment.API_URL + "/items/" + itemId);
+      } catch (e) {
+        this.errors.push(e);
+      }
+    },
+
+    // details(item) {
+    //   alert(JSON.stringify(item));
+    // },
   }
 };
 </script>
