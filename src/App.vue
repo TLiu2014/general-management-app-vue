@@ -1,12 +1,10 @@
 <template>
   <div id="app">
-    <b-container>
-      <b-row>
-          <b-col sm="10" offset-sm="1">
-            <ItemTable />
-          </b-col>
-      </b-row>
-    </b-container>
+    <b-row>
+        <b-col sm="10" offset-sm="1">
+          <ItemTable />
+        </b-col>
+    </b-row>
   </div>
 </template>
 

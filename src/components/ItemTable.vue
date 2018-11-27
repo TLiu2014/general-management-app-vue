@@ -12,6 +12,12 @@
     <template slot="value" slot-scope="data">
       {{data.item.value}}
     </template>
+    <template slot="edit" slot-scope="field">
+      <b-btn size="md" variant="primary">Edit</b-btn>
+    </template>
+    <template slot="delete" slot-scope="field">
+      <b-btn size="md" variant="danger">Delete</b-btn>
+    </template>
   </b-table>
 </template>
 
@@ -23,7 +29,9 @@ const fields = [
   'index',
   { key: 'id', label: 'ID' },
   { key: 'name', label: 'Name' },
-  { key: 'value', label: 'Value' }
+  { key: 'value', label: 'Value' },
+  'edit',
+  'delete'
 ];
 
 export default {
@@ -37,8 +45,8 @@ export default {
   mounted () {
     axios.get(Environment.API_URL + "/items")
     .then(response => {
-      console.log(response);
-      this.items = response.data
+      // console.log(response);
+      this.items = response.data;
     });
   }
 };
