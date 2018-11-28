@@ -9,13 +9,31 @@
         {{data.item.itemId}}
       </template>
       <template slot="name" slot-scope="data">
-        {{data.item.name}}
+        {{(isEdit!==data.item.itemId)? data.item.name : null}}
+        <b-form-group id="editNameInputGroup" v-if="isEdit===data.item.itemId">
+          <b-form-input id="editNameInput"
+                        type="text"
+                        v-model="editForm.name"
+                        required
+                        placeholder="Enter an item name">
+          </b-form-input>
+        </b-form-group>
       </template>
       <template slot="value" slot-scope="data">
-        {{data.item.value}}
+        {{(isEdit!==data.item.itemId)? data.item.value : null}}
+        <b-form-group id="editValueInputGroup" v-if="isEdit===data.item.itemId">
+          <b-form-input id="editValueInput"
+                        type="text"
+                        v-model="editForm.value"
+                        required
+                        placeholder="Enter a value">
+          </b-form-input>
+        </b-form-group>
       </template>
       <template slot="edit" slot-scope="data">
-        <b-btn size="md" variant="primary" @click="details(data.item.itemId)">Edit</b-btn>
+        <b-btn v-if="isEdit===data.item.itemId" size="md" variant="primary" @click="onSubmitEdit(data.item.itemId)">Submit</b-btn>
+        <b-btn v-if="isEdit===data.item.itemId" size="md" variant="secondary" @click="onEditMode(null)">Cancel</b-btn>
+        <b-btn v-else size="md" variant="primary" @click="onEditMode(data.item.itemId)">Edit</b-btn>
       </template>
       <template slot="delete" slot-scope="data">
         <b-btn size="md" variant="danger" @click="deleteItem(data.item.itemId)">Delete</b-btn>
@@ -73,23 +91,55 @@ export default {
         name: '',
         value: '',
       },
-      show: true
+      editForm: {
+        name: '',
+        value: '',
+      },
+      show: true,
+      isEdit: null,
+      errors: []
     }
   }, 
   async mounted () {
     try {
       const response = await axios.get(Environment.API_URL + "/items");
-      this.items = response.data;
+      console.log('GET all items response', response.data);
+      this.items = response.data.sort((a, b) => a.itemId < b.itemId ? -1: 1);
     } catch (e) {
       this.errors.push(e);
     }
   },
   methods: {
+    onEditMode(itemId) {
+      this.isEdit = itemId;
+      const editItem = this.items.find(e => e.itemId === itemId);
+      if (itemId) {
+        this.editForm = {
+          name: editItem.name,
+          value: editItem.value,
+        };
+        delete this.editForm.itemId;
+      } else {
+        this.editForm = null;
+      }
+    },
+    async onSubmitEdit(itemId) {
+      try {
+        const response = await axios.put(Environment.API_URL + "/items/" + itemId, this.editForm);
+        console.log('PUT response', response.data);
+        this.items = this.items.filter(e => e.itemId !== itemId);
+        this.isEdit = null;
+        // push & sort can't be put in one line..
+        this.items.push(response.data);
+        this.items.sort((a, b) => a.itemId < b.itemId ? -1: 1);
+      } catch (e) {
+        this.errors.push(e);
+      }
+    },
     async onSubmit (evt) {
       evt.preventDefault();
       try {
         const response = await axios.post(Environment.API_URL + "/items", qs.stringify(this.form));
-        console.log(response);
         this.items.push(response.data);
       } catch (e) {
         this.errors.push(e);
